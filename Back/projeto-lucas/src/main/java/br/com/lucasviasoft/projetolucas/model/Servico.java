@@ -1,44 +1,50 @@
 package br.com.lucasviasoft.projetolucas.model;
 
-import java.util.Date;
 
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "servico")
 public class Servico {
-
-    private Date data;
-    private ServicosEnum nome;
-    private StatusEnum status;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "descricao", nullable = false)
+    private ServicosEnum descricao;
+    @Column(name = "servicosestados", nullable = false)
+    private List<ServicoEstado> servicosEstados;
 
     public Servico() {
     }
 
-    public Servico(Date data, ServicosEnum nome, StatusEnum status) {
-        this.data = data;
-        this.nome = nome;
-        this.status = status;
+    public Servico(ServicosEnum descricao) {
+        this.descricao = descricao;
+        this.servicosEstados = new ArrayList<ServicoEstado>();
     }
 
-    public Date getData() {
-        return data;
+    public Long getId() {
+        return id;
     }
 
-    public void setData(Date data) {
-        this.data = data;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public ServicosEnum getNome() {
-        return nome;
+    public ServicosEnum getDescricao() {
+        return descricao;
     }
 
-    public void setNome(ServicosEnum nome) {
-        this.nome = nome;
+    public void setDescricao(ServicosEnum descricao) {
+        this.descricao = descricao;
     }
 
-    public StatusEnum getStatus() {
-        return status;
+    public List<ServicoEstado> getServicosEstados() {
+        return servicosEstados;
     }
 
-    public void setStatus(StatusEnum status) {
-        this.status = status;
+    public void setServicosEstados(List<ServicoEstado> servicosEstados) {
+        this.servicosEstados = servicosEstados;
     }
-
 }

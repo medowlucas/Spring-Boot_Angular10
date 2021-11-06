@@ -1,47 +1,59 @@
 package br.com.lucasviasoft.projetolucas.model;
 
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
+@Entity
+@Table(name = "estado")
 public class Estado {
-
-    private Date data;
-    private EstadosEnum sigla;
-    private StatusEnum servico1;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "sigla", nullable = false)
+    private String sigla;
+    @Column(name = "nome", nullable = false)
+    private AutorizadoresEnum nome;
+    @Column(name = "servicosestados", nullable = false)
+    private List<ServicoEstado> servicosEstados;
 
     public Estado(){
     }
 
-    public Estado(Date data, EstadosEnum sigla, StatusEnum servico1){
-        this.data = data;
+    public Estado(String sigla) {
         this.sigla = sigla;
-        this.servico1 = servico1;
+        this.nome = AutorizadoresEnum.valueOf(sigla);
+        this.servicosEstados = new ArrayList<ServicoEstado>();
     }
 
-    public Date getData() {
-        return data;
-    }
-
-    public void setData(Date data) {
-        this.data = data;
-    }
-
-    public EstadosEnum getSigla() {
-        return sigla;
+    public String getSigla() {
+        return this.sigla;
     }
 
     public void setSigla(String sigla) {
-        String c = sigla;
-        Pattern pt = Pattern.compile("[^A-Z]");
-        Matcher match = pt.matcher(c);
-        while(match.find()){
-            c=c.replace(Character.toString(c.charAt(match.start())),"");
-        }
-        System.out.println(String.valueOf(c));
-        this.sigla = EstadosEnum.PR;
-
+        this.sigla = sigla.replaceAll("\\<[^>]*>","");
     }
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public AutorizadoresEnum getNome() {
+        return nome;
+    }
+
+    public void setNome(AutorizadoresEnum nome) {
+        this.nome = nome;
+    }
+
+    public List<ServicoEstado> getServicosEstados() {
+        return servicosEstados;
+    }
+
+    public void setServicosEstados(List<ServicoEstado> servicosEstados) {
+        this.servicosEstados = servicosEstados;   }
 }
