@@ -20,6 +20,7 @@ public class ServicoEstado {
     }
 
     public ServicoEstado(Long idEstado, Long idServico, String status) {
+        this.id = this.id;
         this.idEstado = idEstado;
         this.idServico = idServico;
         this.status = status;
@@ -46,11 +47,20 @@ public class ServicoEstado {
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        String c = status.replaceAll("\\<[^>]*>","");
+        if (c.contains("verde")) {
+            c = StatusEnum.Verde.toString();
+        }else if (c.contains("amarelo")) {
+            c = StatusEnum.Amarelo.toString();
+        }else if  (c.contains("vermelho")) {
+            c = StatusEnum.Vermelho.toString();
+        }else{
+            c = StatusEnum.Vazio.toString();
+        }
+        this.status = c;
     }
 
     public Long getId() {
         return id;
     }
-
 }

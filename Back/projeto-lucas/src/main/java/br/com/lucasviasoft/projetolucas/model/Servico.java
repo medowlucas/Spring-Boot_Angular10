@@ -1,6 +1,5 @@
 package br.com.lucasviasoft.projetolucas.model;
 
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +12,7 @@ public class Servico {
     private Long id;
     @Column(name = "descricao", nullable = false)
     private ServicosEnum descricao;
-    @Column(name = "servicosestados", nullable = false)
+    @ManyToMany
     private List<ServicoEstado> servicosEstados;
 
     public Servico() {

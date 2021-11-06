@@ -7,6 +7,7 @@ import java.util.List;
 @Entity
 @Table(name = "estado")
 public class Estado {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,7 +15,7 @@ public class Estado {
     private String sigla;
     @Column(name = "nome", nullable = false)
     private AutorizadoresEnum nome;
-    @Column(name = "servicosestados", nullable = false)
+    @OneToMany
     private List<ServicoEstado> servicosEstados;
 
     public Estado(){
