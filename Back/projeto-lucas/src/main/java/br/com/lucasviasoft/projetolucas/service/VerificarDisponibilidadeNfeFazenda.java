@@ -89,7 +89,7 @@ public class VerificarDisponibilidadeNfeFazenda {
         System.out.println("A Tabela servico foi criada com sucesso!");
     }
 
-    @Scheduled(cron="0 0/1 * 1/1 * ?")
+    @Scheduled(cron="0 0/5 * 1/1 * ?")
     public void checkReceitaStatus() {
         List<Estado> estados = estadoRepository.findAll();
         if (estados.size() < 31) {
@@ -116,7 +116,7 @@ public class VerificarDisponibilidadeNfeFazenda {
             Servico servico4 = servicoRepository.getById(4L);
             Servico servico5 = servicoRepository.getById(5L);
             Servico servico6 = servicoRepository.getById(6L);
-            Servico servico7 = servicoRepository.getById(7L);
+            Servico servico7 = servicoRepository.getById(7L); //list
 
             ServicoEstado servicoEstado1 = new ServicoEstado();
             servicoEstado1.setEstado(estado);
