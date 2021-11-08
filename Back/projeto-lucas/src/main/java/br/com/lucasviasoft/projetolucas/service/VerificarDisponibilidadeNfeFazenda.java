@@ -4,8 +4,6 @@ import br.com.lucasviasoft.projetolucas.model.*;
 import br.com.lucasviasoft.projetolucas.repository.EstadoRepository;
 import br.com.lucasviasoft.projetolucas.repository.ServicoEstadoRepository;
 import br.com.lucasviasoft.projetolucas.repository.ServicoRepository;
-import br.com.lucasviasoft.projetolucas.repository.StatusServicoEstadoRepository;
-import lombok.extern.java.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -13,151 +11,248 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Log
+@Transactional
 public class VerificarDisponibilidadeNfeFazenda {
 
     @Autowired
-    private EstadoRepository salvarEstado;
-    private ServicoRepository salvarServico;
-    private ServicoEstadoRepository salvarServicoEstado;
-    private StatusServicoEstadoRepository salvarStatusServicoEstado;
+    private EstadoRepository estadoRepository;
+    @Autowired
+    private ServicoRepository servicoRepository;
+    @Autowired
+    private ServicoEstadoRepository servicoEstadoRepository;
 
-    @Scheduled(cron="0 0/5 * 1/1 * ?")
-    public void checkReceitaStatus(){
+    public Elements requestRows(){
+        String receitaUrl = "http://www.nfe.fazenda.gov.br/portal/disponibilidade.aspx";
+        Document resposta = null;
         try {
-            String receitaUrl = "http://www.nfe.fazenda.gov.br/portal/disponibilidade.aspx";
-            Document resposta = Jsoup.connect(receitaUrl).get();
-            Elements tabela = resposta.select("tbody");
-            if (tabela.size() > 1) {
-                Elements rows = tabela.get(1).select("tr");
-                for (int i = 1; i < rows.size(); i++) {
-                    Elements values = rows.get(i).select("td");
-                    String autorizadoresReceita = values.get(0).text().replaceAll("[^a-z A-Z]","");
-                    Estado estado = new Estado(autorizadoresReceita);
-                    List<ServicoEstado> servicoEstadoList = new ArrayList<ServicoEstado>();
-
-                    Servico servico1 = new Servico(ServicosEnum.SERVICO1);
-                    Servico servico2 = new Servico(ServicosEnum.SERVICO2);
-                    Servico servico3 = new Servico(ServicosEnum.SERVICO3);
-                    Servico servico4 = new Servico(ServicosEnum.SERVICO4);
-                    Servico servico5 = new Servico(ServicosEnum.SERVICO5);
-                    Servico servico6 = new Servico(ServicosEnum.SERVICO6);
-                    Servico servico7 = new Servico(ServicosEnum.SERVICO7);
-
-                    ServicoEstado servicoEstado1 = new ServicoEstado(estado.getId(),servico1.getId(),
-                            (values.get(1).text()));
-                    ServicoEstado servicoEstado2 = new ServicoEstado(estado.getId(),servico2.getId(),
-                            (values.get(2).text()));
-                    ServicoEstado servicoEstado3 = new ServicoEstado(estado.getId(),servico3.getId(),
-                            (values.get(3).text()));
-                    ServicoEstado servicoEstado4 = new ServicoEstado(estado.getId(),servico4.getId(),
-                            (values.get(4).text()));
-                    ServicoEstado servicoEstado5 = new ServicoEstado(estado.getId(),servico5.getId(),
-                            (values.get(5).text()));
-                    ServicoEstado servicoEstado6 = new ServicoEstado(estado.getId(),servico6.getId(),
-                            (values.get(7).text()));
-                    ServicoEstado servicoEstado7 = new ServicoEstado(estado.getId(),servico7.getId(),
-                            (values.get(8).text()));
-
-                    StatusServicoEstado statusServicoEstado1 = new StatusServicoEstado(servicoEstado1.getId(),
-                            (servicoEstado1.getStatus()));
-                    StatusServicoEstado statusServicoEstado2 = new StatusServicoEstado(servicoEstado2.getId(),
-                            (servicoEstado2.getStatus()));
-                    StatusServicoEstado statusServicoEstado3 = new StatusServicoEstado(servicoEstado3.getId(),
-                            (servicoEstado3.getStatus()));
-                    StatusServicoEstado statusServicoEstado4 = new StatusServicoEstado(servicoEstado4.getId(),
-                            (servicoEstado4.getStatus()));
-                    StatusServicoEstado statusServicoEstado5 = new StatusServicoEstado(servicoEstado5.getId(),
-                            (servicoEstado5.getStatus()));
-                    StatusServicoEstado statusServicoEstado6 = new StatusServicoEstado(servicoEstado6.getId(),
-                            (servicoEstado6.getStatus()));
-                    StatusServicoEstado statusServicoEstado7 = new StatusServicoEstado(servicoEstado7.getId(),
-                            (servicoEstado7.getStatus()));
-
-                    servicoEstadoList.add(servicoEstado1);
-                    servicoEstadoList.add(servicoEstado2);
-                    servicoEstadoList.add(servicoEstado3);
-                    servicoEstadoList.add(servicoEstado4);
-                    servicoEstadoList.add(servicoEstado5);
-                    servicoEstadoList.add(servicoEstado6);
-                    servicoEstadoList.add(servicoEstado7);
-
-                    System.out.println(estado);
-                    estado.setServicosEstados(servicoEstadoList);
-                    System.out.println(estado);
-
-                    servico1.setServicosEstados(servicoEstadoList);
-                    servico2.setServicosEstados(servicoEstadoList);
-                    servico3.setServicosEstados(servicoEstadoList);
-                    servico4.setServicosEstados(servicoEstadoList);
-                    servico5.setServicosEstados(servicoEstadoList);
-                    servico6.setServicosEstados(servicoEstadoList);
-                    servico7.setServicosEstados(servicoEstadoList);
-
-                    salvarEstado.save(estado);
-                    salvarServico.save(servico1);
-                    salvarServico.save(servico2);
-                    salvarServico.save(servico3);
-                    salvarServico.save(servico4);
-                    salvarServico.save(servico5);
-                    salvarServico.save(servico6);
-                    salvarServico.save(servico7);
-                    salvarServicoEstado.save(servicoEstado1);
-                    salvarServicoEstado.save(servicoEstado2);
-                    salvarServicoEstado.save(servicoEstado3);
-                    salvarServicoEstado.save(servicoEstado4);
-                    salvarServicoEstado.save(servicoEstado5);
-                    salvarServicoEstado.save(servicoEstado6);
-                    salvarServicoEstado.save(servicoEstado7);
-                    salvarStatusServicoEstado.save(statusServicoEstado1);
-                    salvarStatusServicoEstado.save(statusServicoEstado2);
-                    salvarStatusServicoEstado.save(statusServicoEstado3);
-                    salvarStatusServicoEstado.save(statusServicoEstado4);
-                    salvarStatusServicoEstado.save(statusServicoEstado5);
-                    salvarStatusServicoEstado.save(statusServicoEstado6);
-                    salvarStatusServicoEstado.save(statusServicoEstado7);
-
-                }
-            }
-        }catch(IOException e){
+            resposta = Jsoup.connect(receitaUrl).get();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        Elements tabelaSite = resposta.select("tbody");
+        if (tabelaSite.size() < 1) {
+            System.out.println("A Tabela não foi carregada");
+        }
+        return tabelaSite.get(1).select("tr");
     }
 
-    public EstadoRepository getSalvarEstado() {
-        return salvarEstado;
+    public void estadosBuilder(){
+        Elements rows = requestRows();
+            for (int i = 1; i < rows.size(); i++) {
+                Elements values = rows.get(i).select("td");
+                String estadosRequest = values.get(0).text().replaceAll("[^a-z A-Z]", "");
+                Estado estado = new Estado();
+                estado.setSigla(estadosRequest);
+                estadoRepository.save(estado);
+            }
+            Estado estadoMA = new Estado();
+            estadoMA.setSigla("MA");
+            estadoRepository.save(estadoMA);
+
+            String [] svrsAutorizador = new String[]{"AC", "AL", "AP", "DF", "ES", "PA", "PB", "PI", "RJ,", "RN", "RO", "RR", "SC", "SE", "TO"};
+        for (String s : svrsAutorizador) {
+            Estado estadosSvrs = new Estado();
+            estadosSvrs.setSigla(s);
+            estadoRepository.save(estadosSvrs);
+        }
+        System.out.println("A Tabela estado foi criada com sucesso!");
     }
 
-    public void salvarEstado(Estado estado) {
-        this.salvarEstado.save(estado);
+    public static String normalizarPalavra(String palavra) {
+        return Normalizer.normalize(palavra, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "").toLowerCase();
     }
 
-    public ServicoRepository getSalvarServico() {
-        return salvarServico;
+    public void servicosBuilder(){
+       Elements cols = requestRows();
+       Elements headerCols = cols.get(0).select("th");
+            for (int i = 1; i < headerCols.size(); i++) {
+                if(i != 6) {
+                    Servico servico = new Servico();
+                    Elements descricao = headerCols.get(i).select("th");
+                    servico.setDescricao(normalizarPalavra(
+                            descricao.text().replaceAll(
+                            "\\<[^>]*>",""
+                            ).replaceAll(
+                                    "\\d",""
+                            )
+                    ));
+                    servicoRepository.save(servico);
+                }
+            }
+        System.out.println("A Tabela servico foi criada com sucesso!");
     }
 
-    public void setSalvarServico(ServicoRepository salvarServico) {
-        this.salvarServico = salvarServico;
-    }
+    @Scheduled(cron="0 0/1 * 1/1 * ?")
+    public void checkReceitaStatus() {
+        List<Estado> estados = estadoRepository.findAll();
+        if (estados.size() < 31) {
+            estadosBuilder();
+        } else {
+            System.out.println("A Tabela estado já existe");
+        }
 
-    public ServicoEstadoRepository getSalvarServicoEstado() {
-        return salvarServicoEstado;
-    }
+        List<Servico> servicos = servicoRepository.findAll();
+        if (servicos.size() < 7) {
+            servicosBuilder();
+        } else {
+            System.out.println("A Tabela servico já existe");
+        }
 
-    public void setSalvarServicoEstado(ServicoEstadoRepository salvarServicoEstado) {
-        this.salvarServicoEstado = salvarServicoEstado;
-    }
+        Elements rows = requestRows();
 
-    public StatusServicoEstadoRepository getSalvarStatusServicoEstado() {
-        return salvarStatusServicoEstado;
-    }
+        for (int i = 1; i < rows.size(); i++) {
+            Elements values = rows.get(i).select("td");
+            Estado estado = estadoRepository.getById(Long.valueOf(i));
+            Servico servico1 = servicoRepository.getById(1L);
+            Servico servico2 = servicoRepository.getById(2L);
+            Servico servico3 = servicoRepository.getById(3L);
+            Servico servico4 = servicoRepository.getById(4L);
+            Servico servico5 = servicoRepository.getById(5L);
+            Servico servico6 = servicoRepository.getById(6L);
+            Servico servico7 = servicoRepository.getById(7L);
 
-    public void setSalvarStatusServicoEstado(StatusServicoEstadoRepository salvarStatusServicoEstado) {
-        this.salvarStatusServicoEstado = salvarStatusServicoEstado;
+            ServicoEstado servicoEstado1 = new ServicoEstado();
+            servicoEstado1.setEstado(estado);
+            servicoEstado1.setServico(servico1);
+            servicoEstado1.setHistoricoData(LocalDateTime.now());
+            String status1 = (values.get(1).select("img[src$=.png]")).toString();
+            servicoEstado1.setStatus(status1);
+            servicoEstadoRepository.save(servicoEstado1);
+
+            ServicoEstado servicoEstado2 = new ServicoEstado();
+            servicoEstado2.setEstado(estado);
+            servicoEstado2.setServico(servico2);
+            servicoEstado2.setHistoricoData(LocalDateTime.now());
+            String status2 = (values.get(2).select("img[src$=.png]")).toString();
+            servicoEstado2.setStatus(status2);
+            servicoEstadoRepository.save(servicoEstado2);
+
+            ServicoEstado servicoEstado3 = new ServicoEstado();
+            servicoEstado3.setEstado(estado);
+            servicoEstado3.setServico(servico3);
+            servicoEstado3.setHistoricoData(LocalDateTime.now());
+            String status3 = (values.get(3).select("img[src$=.png]")).toString();
+            servicoEstado3.setStatus(status3);
+            servicoEstadoRepository.save(servicoEstado3);
+
+            ServicoEstado servicoEstado4 = new ServicoEstado();
+            servicoEstado4.setEstado(estado);
+            servicoEstado4.setServico(servico4);
+            servicoEstado4.setHistoricoData(LocalDateTime.now());
+            String status4 = (values.get(4).select("img[src$=.png]")).toString();
+            servicoEstado4.setStatus(status4);
+            servicoEstadoRepository.save(servicoEstado4);
+
+            ServicoEstado servicoEstado5 = new ServicoEstado();
+            servicoEstado5.setEstado(estado);
+            servicoEstado5.setServico(servico5);
+            servicoEstado5.setHistoricoData(LocalDateTime.now());
+            String status5 = (values.get(5).select("img[src$=.png]")).toString();
+            servicoEstado5.setStatus(status5);
+            servicoEstadoRepository.save(servicoEstado5);
+
+            ServicoEstado servicoEstado6 = new ServicoEstado();
+            servicoEstado6.setEstado(estado);
+            servicoEstado6.setServico(servico6);
+            servicoEstado6.setHistoricoData(LocalDateTime.now());
+            String status6 = (values.get(7).select("img[src$=.png]")).toString();
+            servicoEstado6.setStatus(status6);
+            servicoEstadoRepository.save(servicoEstado6);
+
+            ServicoEstado servicoEstado7 = new ServicoEstado();
+            servicoEstado7.setEstado(estado);
+            servicoEstado7.setServico(servico7);
+            servicoEstado7.setHistoricoData(LocalDateTime.now());
+            String status7 = (values.get(8).select("img[src$=.png]")).toString();
+            servicoEstado7.setStatus(status7);
+            servicoEstadoRepository.save(servicoEstado7);
+
+            if(i == 12) {
+                Estado estadoMA = estadoRepository.getById(16L);
+
+                ServicoEstado servicoEstadoMA1 = servicoEstado1.clonarServicoEstado();
+                servicoEstadoMA1.setEstado(estadoMA);
+                servicoEstadoMA1.setStatus(status1);
+                servicoEstadoRepository.save(servicoEstadoMA1);
+
+                ServicoEstado servicoEstadoMA2 = servicoEstado2.clonarServicoEstado();
+                servicoEstadoMA2.setEstado(estadoMA);
+                servicoEstadoMA2.setStatus(status2);
+                servicoEstadoRepository.save(servicoEstadoMA2);
+
+                ServicoEstado servicoEstadoMA3 = servicoEstado3.clonarServicoEstado();
+                servicoEstadoMA3.setEstado(estadoMA);
+                servicoEstadoMA3.setStatus(status3);
+                servicoEstadoRepository.save(servicoEstadoMA3);
+
+                ServicoEstado servicoEstadoMA4 = servicoEstado4.clonarServicoEstado();
+                servicoEstadoMA4.setEstado(estadoMA);
+                servicoEstadoMA4.setStatus(status4);
+                servicoEstadoRepository.save(servicoEstadoMA4);
+
+                ServicoEstado servicoEstadoMA5 = servicoEstado5.clonarServicoEstado();
+                servicoEstadoMA5.setEstado(estadoMA);;
+                servicoEstadoMA5.setStatus(status5);
+                servicoEstadoRepository.save(servicoEstadoMA5);
+
+                ServicoEstado servicoEstadoMA6 = servicoEstado6.clonarServicoEstado();
+                servicoEstadoMA6.setEstado(estadoMA);
+                servicoEstadoMA6.setStatus(status6);
+                servicoEstadoRepository.save(servicoEstadoMA6);
+
+                ServicoEstado servicoEstadoMA7 = servicoEstado7.clonarServicoEstado();
+                servicoEstadoMA7.setEstado(estadoMA);
+                servicoEstadoMA7.setStatus(status7);
+                servicoEstadoRepository.save(servicoEstadoMA7);
+            }
+
+            if(i == 13){
+                for(int j = 17;j < 31;j++){
+                    Estado estadoSvrs = estadoRepository.getById(Long.valueOf(j));
+
+                    ServicoEstado servicoEstadoSvrs1 = servicoEstado1.clonarServicoEstado();
+                    servicoEstadoSvrs1.setEstado(estadoSvrs);
+                    servicoEstadoSvrs1.setStatus(status1);
+                    servicoEstadoRepository.save(servicoEstadoSvrs1);
+
+                    ServicoEstado servicoEstadoSvrs2 = servicoEstado2.clonarServicoEstado();
+                    servicoEstadoSvrs2.setEstado(estadoSvrs);
+                    servicoEstadoSvrs2.setStatus(status2);
+                    servicoEstadoRepository.save(servicoEstadoSvrs2);
+
+                    ServicoEstado servicoEstadoSvrs3 = servicoEstado3.clonarServicoEstado();
+                    servicoEstadoSvrs3.setEstado(estadoSvrs);
+                    servicoEstadoSvrs3.setStatus(status3);
+                    servicoEstadoRepository.save(servicoEstadoSvrs3);
+
+                    ServicoEstado servicoEstadoSvrs4 = servicoEstado4.clonarServicoEstado();
+                    servicoEstadoSvrs4.setEstado(estadoSvrs);
+                    servicoEstadoSvrs4.setStatus(status4);
+                    servicoEstadoRepository.save(servicoEstadoSvrs4);
+
+                    ServicoEstado servicoEstadoSvrs5 = servicoEstado5.clonarServicoEstado();
+                    servicoEstadoSvrs5.setEstado(estadoSvrs);
+                    servicoEstadoSvrs5.setStatus(status5);
+                    servicoEstadoRepository.save(servicoEstadoSvrs5);
+
+                    ServicoEstado servicoEstadoSvrs6 = servicoEstado6.clonarServicoEstado();
+                    servicoEstadoSvrs6.setEstado(estadoSvrs);
+                    servicoEstadoSvrs6.setStatus(status6);
+                    servicoEstadoRepository.save(servicoEstadoSvrs6);
+
+                    ServicoEstado servicoEstadoSvrs7 = servicoEstado7.clonarServicoEstado();
+                    servicoEstadoSvrs7.setEstado(estadoSvrs);
+                    servicoEstadoSvrs7.setStatus(status7);
+                    servicoEstadoRepository.save(servicoEstadoSvrs7);
+                }
+            }
+        }
     }
 }

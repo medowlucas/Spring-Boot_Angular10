@@ -1,66 +1,50 @@
 package br.com.lucasviasoft.projetolucas.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "servicoestado")
-public class ServicoEstado {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ServicoEstado implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "idestado", nullable = false)
-    private Long idEstado;
-    @Column(name = "idservico", nullable = false)
-    private Long idServico;
-    @Column(name = "status", nullable = false)
-    private String status;
-
-    public ServicoEstado() {
-    }
-
-    public ServicoEstado(Long idEstado, Long idServico, String status) {
-        this.id = this.id;
-        this.idEstado = idEstado;
-        this.idServico = idServico;
-        this.status = status;
-    }
-
-    public Long getIdEstado() {
-        return idEstado;
-    }
-
-    public void setIdEstado(Long idEstado) {
-        this.idEstado = idEstado;
-    }
-
-    public Long getIdServico() {
-        return idServico;
-    }
-
-    public void setIdServico(Long idServico) {
-        this.idServico = idServico;
-    }
-
-    public String getStatus() {
-        return status;
-    }
+    Long id;
+    @ManyToOne
+    @JoinColumn(name = "id_estado")
+    Estado estado;
+    @ManyToOne
+    @JoinColumn(name = "id_servico")
+    Servico servico;
+    String status;
+    LocalDateTime historicoData;
 
     public void setStatus(String status) {
-        String c = status.replaceAll("\\<[^>]*>","");
+        String c = status;
         if (c.contains("verde")) {
-            c = StatusEnum.Verde.toString();
+            c = "disponivel";
         }else if (c.contains("amarelo")) {
-            c = StatusEnum.Amarelo.toString();
+            c = "falha recente";
         }else if  (c.contains("vermelho")) {
-            c = StatusEnum.Vermelho.toString();
+            c = "indisponivel";
         }else{
-            c = StatusEnum.Vazio.toString();
+            c = "sem informacao";
         }
         this.status = c;
     }
 
-    public Long getId() {
-        return id;
+    public ServicoEstado clonarServicoEstado(){
+        ServicoEstado servicoEstado = new ServicoEstado();
+        servicoEstado.setEstado(this.estado);
+        servicoEstado.setServico(this.servico);
+        servicoEstado.setHistoricoData(this.historicoData);
+        return servicoEstado;
     }
 }

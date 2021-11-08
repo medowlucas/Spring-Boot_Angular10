@@ -1,49 +1,22 @@
 package br.com.lucasviasoft.projetolucas.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "servico")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Servico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "descricao", nullable = false)
-    private ServicosEnum descricao;
-    @ManyToMany
-    private List<ServicoEstado> servicosEstados;
-
-    public Servico() {
-    }
-
-    public Servico(ServicosEnum descricao) {
-        this.descricao = descricao;
-        this.servicosEstados = new ArrayList<ServicoEstado>();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public ServicosEnum getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(ServicosEnum descricao) {
-        this.descricao = descricao;
-    }
-
-    public List<ServicoEstado> getServicosEstados() {
-        return servicosEstados;
-    }
-
-    public void setServicosEstados(List<ServicoEstado> servicosEstados) {
-        this.servicosEstados = servicosEstados;
-    }
+    @Column(name = "id_servico")
+    private Long idServico;
+    private String descricao;
+    @OneToMany(mappedBy = "servico", fetch = FetchType.LAZY)
+    private Set<ServicoEstado> servicoEstado;
 }
